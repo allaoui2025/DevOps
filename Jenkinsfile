@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds') // خاصك تدير هاد الـ credentials فـ Jenkins
-        IMAGE_NAME = "farid2025/devops-app" // بدّلها بـ اسم الــ Docker image ديالك
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+        IMAGE_NAME = "farid2025/devops-app" // بدّل الاسم حسب الإيماج ديالك
     }
 
     stages {
@@ -27,7 +27,9 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
+                echo "🚀 Preparing to push Docker image to DockerHub..."
                 withDockerRegistry([credentialsId: 'dockerhub-creds', url: '']) {
+                    echo "🔐 Authenticated with DockerHub using credentials: dockerhub-creds"
                     sh "docker push $IMAGE_NAME"
                 }
             }
