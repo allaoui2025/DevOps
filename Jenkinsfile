@@ -13,10 +13,11 @@ pipeline {
         }
 
         stage('Build Maven') {
-            steps {
-                sh './mvnw clean package -DskipTests'
-            }
-        }
+    steps {
+        sh 'chmod +x mvnw' // ❗️حل مشكل permission
+        sh './mvnw clean package -DskipTests'
+    }
+}
 
         stage('Build Docker Image') {
             steps {
