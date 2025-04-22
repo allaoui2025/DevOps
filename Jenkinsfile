@@ -13,11 +13,11 @@ pipeline {
         }
 
         stage('Build Maven') {
-    steps {
-        sh 'chmod +x mvnw' // ❗️حل مشكل permission
-        sh './mvnw clean package -DskipTests'
-    }
-}
+            steps {
+                sh 'chmod +x mvnw'
+                sh './mvnw clean package -DskipTests'
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
@@ -28,9 +28,11 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 echo "🚀 Preparing to push Docker image to DockerHub..."
-                withDockerRegistry(credentialsId: 'dockerhub-creds', url: '') {
-                    echo "🔐 Authenticated with DockerHub"
-                    sh "docker push $IMAGE_NAME"
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh '''
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                        docker push $IMAGE_NAME
+                    '''
                 }
             }
         }
@@ -38,7 +40,10 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 echo "🚀 Running Docker container locally"
-                sh "docker run -d -p 8080:8080 $IMAGE_NAME"
+                sh '''
+                    docker rm -f devops-app || true
+                    docker run -d --name devops-app -p 8080:8080 $IMAGE_NAME
+                '''
             }
         }
     }
